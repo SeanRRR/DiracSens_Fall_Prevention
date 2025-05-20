@@ -16,23 +16,22 @@
         android:contentDescription="Background"
         android:alpha="0.9" />
 
-    <!-- Main Content -->
-    <LinearLayout
+    <!-- Main Content using ConstraintLayout -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingTop="0dp"
-        android:paddingBottom="0dp">
+        android:layout_height="match_parent">
 
         <!-- Top App Bar -->
-
         <LinearLayout
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/light_background"
             android:orientation="horizontal"
-            android:padding="0dp">
+            android:padding="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <ImageView
                 android:id="@+id/logo"
@@ -70,28 +69,52 @@
             </LinearLayout>
         </LinearLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/featureGrid"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:paddingVertical="6dp"
-            android:paddingHorizontal="11dp"
-            tools:listitem="@layout/item_feature_card" />
-
-        <TextView
-            android:id="@+id/versionText"
+        <!-- Bottom Navigation Bar -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="v1.0.0"
-            android:textAlignment="center"
-            android:textColor="@android:color/black"
-            android:textSize="12sp"
-            android:padding="8dp"
-            android:background="@android:color/transparent" />
+            android:layout_gravity="bottom"
+            android:background="@color/light_background"
+            app:itemPaddingBottom="7dp"
+            app:itemIconSize="46dp"
+            app:itemIconTint="@color/bottom_nav_selector"
+            app:itemTextColor="@color/bottom_nav_selector"
+            app:menu="@menu/bottom_nav_menu"
+            app:labelVisibilityMode="labeled"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-    </LinearLayout>
+        <!-- RecyclerView for Feature Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/featureGrid"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:paddingHorizontal="11dp"
+            android:paddingVertical="6dp"
+            app:layout_constraintTop_toBottomOf="@id/topAppBar"
+            app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:listitem="@layout/item_feature_card" />
+
+        <!-- Version Text -->
+<!--        <TextView-->
+<!--            android:id="@+id/versionText"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="v1.0.0"-->
+<!--            android:textColor="@android:color/black"-->
+<!--            android:textSize="12sp"-->
+<!--            android:padding="8dp"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/bottomNavigation"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            android:layout_marginEnd="8dp"/>-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -108,19 +131,5 @@
         app:fabCustomSize="68dp"
         app:shapeAppearance="@style/ShapeAppearance.App.CircularImage"
         app:maxImageSize="68dp" />
-
-    <!-- Bottom Navigation Bar -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/light_background"
-        app:itemPaddingBottom="7dp"
-        app:itemIconSize="46dp"
-        app:itemIconTint="@color/bottom_nav_selector"
-        app:itemTextColor="@color/bottom_nav_selector"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

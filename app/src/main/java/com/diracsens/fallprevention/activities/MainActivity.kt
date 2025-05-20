@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.WindowInsetsController
 import androidx.core.content.ContextCompat
+import android.util.TypedValue
 //import com.diracsens.fallprevention.activities.sensor.BloodPressureActivity
 //import com.diracsens.fallprevention.activities.BodyBalanceActivity
 //import com.diracsens.fallprevention.activities.sensor.BreathingRateActivity
@@ -77,22 +78,20 @@ class FeatureCardAdapter(
             holder.label?.text = feature.label
             holder.itemView.setOnClickListener { onClick(feature) }
 
-            // Re-add logic to set the height of the card to match its width after layout
+            // Set the height of the card to match its width to make it square
             holder.itemView.post {
                 val width = holder.itemView.width
-                Log.d(TAG, "Item view width after layout: $width")
                 val layoutParams = holder.itemView.layoutParams
                 if (layoutParams != null && width > 0) {
                     layoutParams.height = width
                     holder.itemView.layoutParams = layoutParams
-                    holder.itemView.requestLayout()
-                    Log.d(TAG, "Item height set to: $width")
-                } else if (layoutParams == null) {
-                    Log.e(TAG, "Layout params are null for position $position")
-                } else {
-                     Log.d(TAG, "Item view width is 0 for position $position")
+
+                    // Calculate and set text size based on width
+                    val textSize = width * 0.1f // Adjust the factor as needed
+                    holder.label?.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
                 }
             }
+
         } else {
              Log.e(TAG, "Attempting to bind position $position but features list size is ${features.size}")
         }
@@ -224,17 +223,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupFeatureGrid() {
         val features = listOf(
-//            FeatureCard(R.drawable.body_balance_icon, "Body Balance", com.diracsens.fallprevention.activities.BodyBalanceActivity::class.java),
+            FeatureCard(R.drawable.body_balance_icon, "Body Balance", BodyBalanceActivity::class.java),
             FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", BloodPressureActivity::class.java),
-//            FeatureCard(R.drawable.gait_icon, "Gait Analysis", com.diracsens.fallprevention.activities.GaitAnalysisActivity::class.java),
+            FeatureCard(R.drawable.gait_icon, "Gait Analysis", GaitAnalysisActivity::class.java),
             FeatureCard(R.drawable.heart_rate_icon, "Heart Rate", HeartRateActivity::class.java),
             FeatureCard(R.drawable.breathing_rate_icon, "Respiratory Rate", RespiratoryRateActivity::class.java),
-//            FeatureCard(R.drawable.survey_icon, "Survey", com.diracsens.fallprevention.activities.SurveyActivity::class.java),
-//            FeatureCard(R.drawable.medication_icon, "Medication", com.diracsens.fallprevention.activities.MedicationActivity::class.java),
-//            FeatureCard(R.drawable.baseline_icon, "Baseline", com.diracsens.fallprevention.activities.BaselineActivity::class.java)
+            FeatureCard(R.drawable.survey_icon, "Survey", SurveyActivity::class.java),
+            FeatureCard(R.drawable.medication_icon, "Medication", MedicationActivity::class.java),
+            FeatureCard(R.drawable.baseline_icon, "Baseline", BaselineActivity::class.java)
         )
         val recyclerView = binding.featureGrid
-        recyclerView.layoutManager = GridLayoutManager(this, 2)
+
+        // Set spanCount based on orientation (2 for portrait, 4 for landscape)
+        val orientation = resources.configuration.orientation
+        val spanCount = if (orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            2
+        } else {
+            4
+        }
+
+        recyclerView.layoutManager = GridLayoutManager(this, spanCount)
         recyclerView.adapter = FeatureCardAdapter(features, recyclerView) { feature ->
             startActivity(Intent(this, feature.activityClass))
         }
