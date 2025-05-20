@@ -1,15 +1,12 @@
-package com.diracsens.fallprevention
+package com.diracsens.fallprevention.activities
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -25,7 +22,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.ViewTreeObserver
+import android.view.WindowInsetsController
+import androidx.core.content.ContextCompat
 //import com.diracsens.fallprevention.activities.sensor.BloodPressureActivity
 //import com.diracsens.fallprevention.activities.BodyBalanceActivity
 //import com.diracsens.fallprevention.activities.sensor.BreathingRateActivity
@@ -37,6 +35,10 @@ import com.diracsens.fallprevention.databinding.ActivityMainBinding
 import com.diracsens.fallprevention.services.BluetoothService
 import com.diracsens.fallprevention.viewmodels.HealthMetricsViewModel
 import android.util.Log
+import com.diracsens.fallprevention.R
+import com.diracsens.fallprevention.activities.sensor.BloodPressureActivity
+import com.diracsens.fallprevention.activities.sensor.HeartRateActivity
+import com.diracsens.fallprevention.activities.sensor.RespiratoryRateActivity
 
 // Data class for feature cards
 data class FeatureCard(val iconRes: Int, val label: String, val activityClass: Class<*>)
@@ -95,7 +97,9 @@ class FeatureCardAdapter(
              Log.e(TAG, "Attempting to bind position $position but features list size is ${features.size}")
         }
     }
-    override fun getItemCount() = features.size
+    override fun getItemCount(): Int {
+        return features.size
+    }
 }
 
 class MainActivity : AppCompatActivity() {
@@ -112,6 +116,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Set status bar and navigation bar colors
+        window.statusBarColor = ContextCompat.getColor(this, R.color.light_background)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.light_background)
+
+        // Set status bar icons to dark for light background
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+             window.insetsController?.setSystemBarsAppearance(
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+        // For navigation bar icons before R, it's more complex and theme-dependent,
+        // often handled via themes or specific view flags which are less direct.
+        // We'll focus on the status bar for broader compatibility with light icons.
 
         // Initialize Bluetooth adapter
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -130,6 +156,33 @@ class MainActivity : AppCompatActivity() {
 
         // Set up UI components
         setupFeatureGrid()
+
+        // Set up Bottom Navigation
+        binding.bottomNavigation.setOnNavigationItemSelectedListener {
+            when(it.itemId) {
+                R.id.nav_home -> {
+                    // Handle Home selection
+                    Log.d("MainActivity", "Home selected")
+                    true
+                }
+                R.id.nav_education -> {
+                    // Handle Education selection
+                    Log.d("MainActivity", "Education selected")
+                    true
+                }
+                R.id.nav_help -> {
+                    // Handle Help selection
+                    Log.d("MainActivity", "Help selected")
+                    true
+                }
+                R.id.nav_settings -> {
+                    // Handle Settings selection
+                    Log.d("MainActivity", "Settings selected")
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun requestPermissions() {
@@ -172,10 +225,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupFeatureGrid() {
         val features = listOf(
 //            FeatureCard(R.drawable.body_balance_icon, "Body Balance", com.diracsens.fallprevention.activities.BodyBalanceActivity::class.java),
-            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", com.diracsens.fallprevention.activities.sensor.BloodPressureActivity::class.java),
+            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", BloodPressureActivity::class.java),
 //            FeatureCard(R.drawable.gait_icon, "Gait Analysis", com.diracsens.fallprevention.activities.GaitAnalysisActivity::class.java),
-            FeatureCard(R.drawable.heart_rate_icon, "Heart Rate", com.diracsens.fallprevention.activities.sensor.HeartRateActivity::class.java),
-//            FeatureCard(R.drawable.breathing_rate_icon, "Respiratory Rate", com.diracsens.fallprevention.activities.sensor.RespiratoryRateActivity::class.java),
+            FeatureCard(R.drawable.heart_rate_icon, "Heart Rate", HeartRateActivity::class.java),
+            FeatureCard(R.drawable.breathing_rate_icon, "Respiratory Rate", RespiratoryRateActivity::class.java),
 //            FeatureCard(R.drawable.survey_icon, "Survey", com.diracsens.fallprevention.activities.SurveyActivity::class.java),
 //            FeatureCard(R.drawable.medication_icon, "Medication", com.diracsens.fallprevention.activities.MedicationActivity::class.java),
 //            FeatureCard(R.drawable.baseline_icon, "Baseline", com.diracsens.fallprevention.activities.BaselineActivity::class.java)

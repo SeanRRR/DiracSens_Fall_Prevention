@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_background">#F5F7FA</color>
+    <color name="dark_grey_icon">#424242</color>
+    <color name="call_button_purple">#7852A9</color>
 </resources>
