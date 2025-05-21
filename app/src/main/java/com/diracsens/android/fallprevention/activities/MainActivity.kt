@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.activities
+package com.diracsens.android.fallprevention.activities
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -25,21 +25,26 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.WindowInsetsController
 import androidx.core.content.ContextCompat
 import android.util.TypedValue
-//import com.diracsens.fallprevention.activities.sensor.BloodPressureActivity
-//import com.diracsens.fallprevention.activities.BodyBalanceActivity
-//import com.diracsens.fallprevention.activities.sensor.BreathingRateActivity
-//import com.diracsens.fallprevention.activities.GaitAnalysisActivity
-//import com.diracsens.fallprevention.activities.sensor.HeartRateActivity
-//import com.diracsens.fallprevention.activities.MedicationActivity
-//import com.diracsens.fallprevention.activities.SurveyActivity
-import com.diracsens.fallprevention.databinding.ActivityMainBinding
-import com.diracsens.fallprevention.services.BluetoothService
-import com.diracsens.fallprevention.viewmodels.HealthMetricsViewModel
+//import com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity
+//import com.diracsens.android.fallprevention.activities.sensor.BodyBalanceActivity
+//import com.diracsens.android.fallprevention.activities.sensor.BreathingRateActivity
+//import com.diracsens.android.fallprevention.activities.sensor.GaitAnalysisActivity
+//import com.diracsens.android.fallprevention.activities.sensor.HeartRateActivity
+//import com.diracsens.android.fallprevention.activities.medication.MedicationActivity
+//import com.diracsens.android.fallprevention.activities.survey.SurveyActivity
+import com.diracsens.android.fallprevention.databinding.ActivityMainBinding
+import com.diracsens.android.fallprevention.services.BluetoothService
+import com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel
 import android.util.Log
-import com.diracsens.fallprevention.R
-import com.diracsens.fallprevention.activities.sensor.BloodPressureActivity
-import com.diracsens.fallprevention.activities.sensor.HeartRateActivity
-import com.diracsens.fallprevention.activities.sensor.RespiratoryRateActivity
+import com.diracsens.android.fallprevention.R
+import com.diracsens.android.fallprevention.activities.medication.MedicationActivity
+import com.diracsens.android.fallprevention.activities.sensor.BaselineActivity
+import com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity
+import com.diracsens.android.fallprevention.activities.sensor.BodyBalanceActivity
+import com.diracsens.android.fallprevention.activities.sensor.GaitAnalysisActivity
+import com.diracsens.android.fallprevention.activities.sensor.HeartRateActivity
+import com.diracsens.android.fallprevention.activities.sensor.RespiratoryRateActivity
+import com.diracsens.android.fallprevention.activities.survey.SurveyActivity
 
 // Data class for feature cards
 data class FeatureCard(val iconRes: Int, val label: String, val activityClass: Class<*>)
@@ -103,7 +108,7 @@ class FeatureCardAdapter(
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: HealthMetricsViewModel by viewModels()
+    private val viewModel: com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel by viewModels()
 
     private val SCAN_PERIOD: Long = 10000
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -224,7 +229,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupFeatureGrid() {
         val features = listOf(
             FeatureCard(R.drawable.body_balance_icon, "Body Balance", BodyBalanceActivity::class.java),
-            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", BloodPressureActivity::class.java),
+            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity::class.java),
             FeatureCard(R.drawable.gait_icon, "Gait Analysis", GaitAnalysisActivity::class.java),
             FeatureCard(R.drawable.heart_rate_icon, "Heart Rate", HeartRateActivity::class.java),
             FeatureCard(R.drawable.breathing_rate_icon, "Respiratory Rate", RespiratoryRateActivity::class.java),

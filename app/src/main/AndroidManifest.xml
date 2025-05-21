@@ -25,7 +25,7 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
 
     <application
-        android:name=".DiracSensApplication"
+        android:name="com.diracsens.android.fallprevention.DiracSensApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -37,7 +37,7 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".activities.MainActivity"
+            android:name="com.diracsens.android.fallprevention.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,14 +45,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.BloodPressureActivity" />
-        <activity android:name=".activities.sensor.HeartRateActivity" />
+        <activity android:name="com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity" />
+        <activity android:name="com.diracsens.android.fallprevention.activities.sensor.HeartRateActivity" />
         <activity android:name=".activities.sensor.RespiratoryRateActivity" />
-        <activity android:name=".activities.GaitAnalysisActivity" />
-        <activity android:name=".activities.BodyBalanceActivity" />
-        <activity android:name=".activities.SurveyActivity" />
-        <activity android:name=".activities.MedicationActivity" />
-        <activity android:name=".activities.BaselineActivity" />
+        <activity android:name=".activities.sensor.GaitAnalysisActivity" />
+        <activity android:name=".activities.sensor.BodyBalanceActivity" />
+        <activity android:name=".activities.survey.SurveyActivity" />
+        <activity android:name=".activities.medication.MedicationActivity" />
+        <activity android:name=".activities.sensor.BaselineActivity" />
 
         <service android:name=".services.BluetoothService" />
 

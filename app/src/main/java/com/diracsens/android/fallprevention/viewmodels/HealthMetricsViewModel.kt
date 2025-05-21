@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.viewmodels
+package com.diracsens.android.fallprevention.viewmodels
 
 import android.app.Application
 import android.net.Uri
@@ -6,12 +6,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.diracsens.fallprevention.models.BalanceReading
-import com.diracsens.fallprevention.models.BloodPressureReading
-import com.diracsens.fallprevention.models.BreathingRateReading
-import com.diracsens.fallprevention.models.GaitReading
-import com.diracsens.fallprevention.models.HeartRateReading
-import com.diracsens.fallprevention.repositories.HealthDataRepository
+import com.diracsens.android.fallprevention.models.BalanceReading
+import com.diracsens.android.fallprevention.models.BloodPressureReading
+import com.diracsens.android.fallprevention.models.BreathingRateReading
+import com.diracsens.android.fallprevention.models.GaitReading
+import com.diracsens.android.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.repositories.HealthDataRepository
 import kotlinx.coroutines.launch
 
 class HealthMetricsViewModel(application: Application) : AndroidViewModel(application) {

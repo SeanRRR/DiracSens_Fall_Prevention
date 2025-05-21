@@ -1,8 +1,8 @@
-package com.diracsens.fallprevention.activities
+package com.diracsens.android.fallprevention.activities.sensor
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.diracsens.fallprevention.databinding.ActivityGaitAnalysisBinding
+import com.diracsens.android.fallprevention.databinding.ActivityGaitAnalysisBinding
 
 class GaitAnalysisActivity : AppCompatActivity() {
 

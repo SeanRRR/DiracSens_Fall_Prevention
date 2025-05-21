@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.utils
+package com.diracsens.android.fallprevention.utils
 
 import android.graphics.Rect
 import android.view.View

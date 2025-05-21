@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.services
+package com.diracsens.android.fallprevention.services
 
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
@@ -15,10 +15,10 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import com.diracsens.fallprevention.models.BloodPressureReading
-import com.diracsens.fallprevention.models.BreathingRateReading
-import com.diracsens.fallprevention.models.HeartRateReading
-import com.diracsens.fallprevention.repositories.HealthDataRepository
+import com.diracsens.android.fallprevention.models.BloodPressureReading
+import com.diracsens.android.fallprevention.models.BreathingRateReading
+import com.diracsens.android.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.repositories.HealthDataRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

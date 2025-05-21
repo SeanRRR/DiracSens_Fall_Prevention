@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.repositories
+package com.diracsens.android.fallprevention.repositories
 
 import android.content.Context
 import android.media.MediaScannerConnection
@@ -7,13 +7,13 @@ import android.os.Environment
 import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
-import com.diracsens.fallprevention.database.AppDatabase
-import com.diracsens.fallprevention.models.BalanceReading
-import com.diracsens.fallprevention.models.BloodPressureReading
-import com.diracsens.fallprevention.models.BreathingRateReading
-import com.diracsens.fallprevention.models.GaitReading
-import com.diracsens.fallprevention.models.HeartRateReading
-import com.diracsens.fallprevention.services.BluetoothService
+import com.diracsens.android.fallprevention.database.AppDatabase
+import com.diracsens.android.fallprevention.models.BalanceReading
+import com.diracsens.android.fallprevention.models.BloodPressureReading
+import com.diracsens.android.fallprevention.models.BreathingRateReading
+import com.diracsens.android.fallprevention.models.GaitReading
+import com.diracsens.android.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.services.BluetoothService
 import com.opencsv.CSVWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

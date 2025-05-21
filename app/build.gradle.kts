@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.diracsens.fallprevention"
+    namespace = "com.diracsens.android.fallprevention"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.diracsens.fallprevention"
+        applicationId = "com.diracsens.android.fallprevention"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

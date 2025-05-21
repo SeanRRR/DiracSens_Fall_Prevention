@@ -1,14 +1,14 @@
-package com.diracsens.fallprevention.database
+package com.diracsens.android.fallprevention.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.diracsens.fallprevention.models.BalanceReading
-import com.diracsens.fallprevention.models.BloodPressureReading
-import com.diracsens.fallprevention.models.BreathingRateReading
-import com.diracsens.fallprevention.models.GaitReading
-import com.diracsens.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.models.BalanceReading
+import com.diracsens.android.fallprevention.models.BloodPressureReading
+import com.diracsens.android.fallprevention.models.BreathingRateReading
+import com.diracsens.android.fallprevention.models.GaitReading
+import com.diracsens.android.fallprevention.models.HeartRateReading
 
 @Dao
 interface BloodPressureDao {

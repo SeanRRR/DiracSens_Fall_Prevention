@@ -1,8 +1,8 @@
 // DiracSensApplication.kt
-package com.diracsens.fallprevention
+package com.diracsens.android.fallprevention
 
 import android.app.Application
-import com.diracsens.fallprevention.repositories.HealthDataRepository
+import com.diracsens.android.fallprevention.repositories.HealthDataRepository
 
 class DiracSensApplication : Application() {
 

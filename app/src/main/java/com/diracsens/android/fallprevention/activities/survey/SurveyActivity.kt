@@ -1,8 +1,8 @@
-package com.diracsens.fallprevention.activities
+package com.diracsens.android.fallprevention.activities.survey
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.diracsens.fallprevention.databinding.ActivitySurveyBinding
+import com.diracsens.android.fallprevention.databinding.ActivitySurveyBinding
 
 class SurveyActivity : AppCompatActivity() {
 

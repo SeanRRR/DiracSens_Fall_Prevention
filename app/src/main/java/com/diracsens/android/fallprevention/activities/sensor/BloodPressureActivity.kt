@@ -1,5 +1,5 @@
 // BloodPressureActivity.kt
-package com.diracsens.fallprevention.activities.sensor
+package com.diracsens.android.fallprevention.activities.sensor
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -9,10 +9,10 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.diracsens.fallprevention.databinding.ActivityBloodPressureBinding
-import com.diracsens.fallprevention.models.BloodPressureReading
-import com.diracsens.fallprevention.services.BluetoothService
-import com.diracsens.fallprevention.viewmodels.HealthMetricsViewModel
+import com.diracsens.android.fallprevention.databinding.ActivityBloodPressureBinding
+import com.diracsens.android.fallprevention.models.BloodPressureReading
+import com.diracsens.android.fallprevention.services.BluetoothService
+import com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -25,7 +25,7 @@ import java.util.Locale
 
 class BloodPressureActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBloodPressureBinding
-    private val viewModel: HealthMetricsViewModel by viewModels()
+    private val viewModel: com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

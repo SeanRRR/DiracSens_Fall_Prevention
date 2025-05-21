@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention.models
+package com.diracsens.android.fallprevention.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,5 +1,5 @@
-// RespiratoryRateActivity.kt
-package com.diracsens.fallprevention.activities.sensor
+// HeartRateActivity.kt
+package com.diracsens.android.fallprevention.activities.sensor
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -9,10 +9,10 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.diracsens.fallprevention.databinding.ActivityBreathingRateBinding
-import com.diracsens.fallprevention.models.BreathingRateReading
-import com.diracsens.fallprevention.services.BluetoothService
-import com.diracsens.fallprevention.viewmodels.HealthMetricsViewModel
+import com.diracsens.android.fallprevention.databinding.ActivityHeartRateBinding
+import com.diracsens.android.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.services.BluetoothService
+import com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -23,13 +23,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class RespiratoryRateActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityBreathingRateBinding
-    private val viewModel: HealthMetricsViewModel by viewModels()
+class HeartRateActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityHeartRateBinding
+    private val viewModel: com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityBreathingRateBinding.inflate(layoutInflater)
+        binding = ActivityHeartRateBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupToolbar()
@@ -41,7 +41,7 @@ class RespiratoryRateActivity : AppCompatActivity() {
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Respiratory Rate"
+        supportActionBar?.title = "Heart Rate"
     }
 
     private fun setupChart() {
@@ -61,7 +61,7 @@ class RespiratoryRateActivity : AppCompatActivity() {
 
             axisLeft.apply {
                 setDrawGridLines(true)
-                axisMinimum = 8f  // Minimum breathing rate
+                axisMinimum = 40f  // Minimum heart rate
             }
 
             axisRight.isEnabled = false
@@ -78,14 +78,14 @@ class RespiratoryRateActivity : AppCompatActivity() {
     }
 
     private fun observeData() {
-        // Observe current breathing rate
-        viewModel.currentBreathingRate.observe(this) { breathingRate ->
-            binding.textBreathingRate.text = "$breathingRate"
+        // Observe current heart rate
+        viewModel.currentHeartRate.observe(this) { heartRate ->
+            binding.textHeartRate.text = "$heartRate"
 
-            // Update status based on breathing rate values
+            // Update status based on heart rate values
             val status = when {
-                breathingRate > 20 -> "High"
-                breathingRate < 12 -> "Low"
+                heartRate > 100 -> "High"
+                heartRate < 60 -> "Low"
                 else -> "Normal"
             }
             binding.textStatus.text = status
@@ -99,36 +99,36 @@ class RespiratoryRateActivity : AppCompatActivity() {
             binding.textStatus.setTextColor(statusColor)
         }
 
-        // Observe breathing rate history for chart
-        viewModel.breathingRateHistory.observe(this) { readings ->
+        // Observe heart rate history for chart
+        viewModel.heartRateHistory.observe(this) { readings ->
             updateChart(readings)
         }
     }
 
-    private fun updateChart(readings: List<BreathingRateReading>) {
+    private fun updateChart(readings: List<HeartRateReading>) {
         if (readings.isEmpty()) return
 
-        // Prepare data for breathing rate readings
-        val breathingRateEntries = readings.map { reading ->
-            Entry(reading.timestamp.toFloat(), reading.breathingRate.toFloat())
+        // Prepare data for heart rate readings
+        val heartRateEntries = readings.map { reading ->
+            Entry(reading.timestamp.toFloat(), reading.heartRate.toFloat())
         }
 
         // Create dataset
-        val breathingRateDataSet = LineDataSet(breathingRateEntries, "Breathing Rate").apply {
-            color = Color.BLUE
-            setCircleColor(Color.BLUE)
+        val heartRateDataSet = LineDataSet(heartRateEntries, "Heart Rate").apply {
+            color = Color.RED
+            setCircleColor(Color.RED)
             lineWidth = 2f
             circleRadius = 3f
             setDrawCircleHole(false)
             valueTextSize = 9f
             setDrawFilled(true)
-            fillColor = Color.BLUE
+            fillColor = Color.RED
             fillAlpha = 50
             mode = LineDataSet.Mode.CUBIC_BEZIER
         }
 
         // Create line data
-        val lineData = LineData(breathingRateDataSet)
+        val lineData = LineData(heartRateDataSet)
 
         // Set data to chart
         binding.chart.data = lineData
@@ -137,7 +137,7 @@ class RespiratoryRateActivity : AppCompatActivity() {
 
     private fun setupExportButton() {
         binding.buttonExport.setOnClickListener {
-            viewModel.exportData(BluetoothService.DATA_TYPE_BREATHING_RATE) { uri ->
+            viewModel.exportData(BluetoothService.DATA_TYPE_HEART_RATE) { uri ->
                 if (uri != null) {
                     // Show success message
                     Toast.makeText(

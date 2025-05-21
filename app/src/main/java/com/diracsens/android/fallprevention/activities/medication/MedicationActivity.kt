@@ -1,8 +1,8 @@
-package com.diracsens.fallprevention.activities
+package com.diracsens.android.fallprevention.activities.medication
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.diracsens.fallprevention.databinding.ActivityMedicationBinding
+import com.diracsens.android.fallprevention.databinding.ActivityMedicationBinding
 
 class MedicationActivity : AppCompatActivity() {
 

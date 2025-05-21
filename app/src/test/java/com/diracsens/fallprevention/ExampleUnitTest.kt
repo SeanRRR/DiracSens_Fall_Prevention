@@ -1,4 +1,4 @@
-package com.diracsens.fallprevention
+package com.diracsens.android.fallprevention
 
 import org.junit.Test
 
