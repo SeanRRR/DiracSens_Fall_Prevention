@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.WindowInsetsController
 import androidx.core.content.ContextCompat
 import android.util.TypedValue
+import android.content.pm.PackageManager
 //import com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity
 //import com.diracsens.android.fallprevention.activities.sensor.BodyBalanceActivity
 //import com.diracsens.android.fallprevention.activities.sensor.BreathingRateActivity
@@ -108,13 +109,7 @@ class FeatureCardAdapter(
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: com.diracsens.android.fallprevention.viewmodels.HealthMetricsViewModel by viewModels()
-
-    private val SCAN_PERIOD: Long = 10000
-    private var bluetoothAdapter: BluetoothAdapter? = null
-    private var bluetoothLeScanner: BluetoothLeScanner? = null
-    private var scanning = false
-    private val handler = Handler(Looper.getMainLooper())
+    private val viewModel: HealthMetricsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,23 +134,8 @@ class MainActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
-        // For navigation bar icons before R, it's more complex and theme-dependent,
-        // often handled via themes or specific view flags which are less direct.
-        // We'll focus on the status bar for broader compatibility with light icons.
 
-        // Initialize Bluetooth adapter
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
-        bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
-
-        // Check if Bluetooth is supported
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-
-        // Request necessary permissions
+        // Request permissions when app starts
         requestPermissions()
 
         // Set up UI components
@@ -165,22 +145,18 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigation.setOnNavigationItemSelectedListener {
             when(it.itemId) {
                 R.id.nav_home -> {
-                    // Handle Home selection
                     Log.d("MainActivity", "Home selected")
                     true
                 }
                 R.id.nav_education -> {
-                    // Handle Education selection
                     Log.d("MainActivity", "Education selected")
                     true
                 }
                 R.id.nav_help -> {
-                    // Handle Help selection
                     Log.d("MainActivity", "Help selected")
                     true
                 }
                 R.id.nav_settings -> {
-                    // Handle Settings selection
                     Log.d("MainActivity", "Settings selected")
                     true
                 }
@@ -190,46 +166,111 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissions() {
+        Log.d("MainActivity", "Starting permission request process")
         val permissionsToRequest = mutableListOf<String>()
 
         // Bluetooth permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Log.d("MainActivity", "Device is Android 12+ (API ${Build.VERSION.SDK_INT})")
+            // Check if permissions are already granted
+            val hasConnect = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+            val hasScan = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "Current permission status - BLUETOOTH_CONNECT: $hasConnect, BLUETOOTH_SCAN: $hasScan")
+            
+            if (!hasConnect || !hasScan) {
+                Log.d("MainActivity", "Requesting Android 12+ Bluetooth permissions")
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            } else {
+                Log.d("MainActivity", "Bluetooth permissions already granted")
+            }
+        } else {
+            Log.d("MainActivity", "Device is Android ${Build.VERSION.SDK_INT}, using legacy permissions")
         }
 
         // Location permissions (required for BLE scanning)
+        val hasLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        Log.d("MainActivity", "Current location permission status: $hasLocation")
+        if (!hasLocation) {
+            Log.d("MainActivity", "Requesting location permission")
         permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            Log.d("MainActivity", "Location permission already granted")
+        }
 
         // Storage permissions
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            Log.d("MainActivity", "Device is Android 9 or lower, requesting legacy storage permissions")
+            val hasWrite = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            val hasRead = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "Current storage permission status - WRITE: $hasWrite, READ: $hasRead")
+            
+            if (!hasWrite || !hasRead) {
             permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
         } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+            Log.d("MainActivity", "Device is Android 11, requesting READ_EXTERNAL_STORAGE")
+            val hasRead = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "Current READ_EXTERNAL_STORAGE permission status: $hasRead")
+            
+            if (!hasRead) {
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
         } else {
+            Log.d("MainActivity", "Device is Android 13+, requesting READ_MEDIA_IMAGES")
+            val hasMedia = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED
+            Log.d("MainActivity", "Current READ_MEDIA_IMAGES permission status: $hasMedia")
+            
+            if (!hasMedia) {
             permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
+            }
         }
 
+        if (permissionsToRequest.isEmpty()) {
+            Log.d("MainActivity", "All permissions already granted, no need to request")
+        } else {
+            Log.d("MainActivity", "Requesting permissions: ${permissionsToRequest.joinToString()}")
         requestMultiplePermissions.launch(permissionsToRequest.toTypedArray())
+        }
     }
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val allGranted = permissions.entries.all { it.value }
+        Log.d("MainActivity", "Permission request results:")
+        permissions.entries.forEach { (permission, granted) ->
+            Log.d("MainActivity", "  $permission = $granted")
+        }
         if (allGranted) {
-            // Start Bluetooth service
-            //startBluetoothService()
+            Log.d("MainActivity", "All permissions granted, starting Bluetooth service")
+            startBluetoothService()
         } else {
+            Log.d("MainActivity", "Some permissions were denied")
+            // Check which permissions were denied
+            permissions.entries.filter { !it.value }.forEach { (permission, _) ->
+                Log.d("MainActivity", "Denied permission: $permission")
+                // Check if we should show rationale
+                if (shouldShowRequestPermissionRationale(permission)) {
+                    Log.d("MainActivity", "Should show rationale for $permission")
+                } else {
+                    Log.d("MainActivity", "Permission $permission permanently denied")
+                }
+            }
             Toast.makeText(this, "Permissions required for app functionality", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun startBluetoothService() {
+        val serviceIntent = Intent(this, BluetoothService::class.java)
+        startService(serviceIntent)
     }
 
     private fun setupFeatureGrid() {
         val features = listOf(
             FeatureCard(R.drawable.body_balance_icon, "Body Balance", BodyBalanceActivity::class.java),
-            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity::class.java),
+            FeatureCard(R.drawable.blood_pressure_icon, "Blood Pressure", BloodPressureActivity::class.java),
             FeatureCard(R.drawable.gait_icon, "Gait Analysis", GaitAnalysisActivity::class.java),
             FeatureCard(R.drawable.heart_rate_icon, "Heart Rate", HeartRateActivity::class.java),
             FeatureCard(R.drawable.breathing_rate_icon, "Respiratory Rate", RespiratoryRateActivity::class.java),
@@ -253,95 +294,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    private fun startBluetoothService() {
-//        val serviceIntent = Intent(this, BluetoothService::class.java)
-//        startService(serviceIntent)
-//
-//        // Register broadcast receiver for data updates
-//        val filter = IntentFilter().apply {
-//            addAction(BluetoothService.ACTION_DATA_AVAILABLE)
-//        }
-//        registerReceiver(dataUpdateReceiver, filter)
-//
-//        // Start scanning for devices
-//        scanLeDevice()
-//    }
-
-    private val dataUpdateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                BluetoothService.ACTION_DATA_AVAILABLE -> {
-                    val dataType = intent.getStringExtra(BluetoothService.EXTRA_DATA_TYPE)
-                    when (dataType) {
-                        BluetoothService.DATA_TYPE_BLOOD_PRESSURE -> {
-                            val systolic = intent.getIntExtra(BluetoothService.EXTRA_SYSTOLIC, 0)
-                            val diastolic = intent.getIntExtra(BluetoothService.EXTRA_DIASTOLIC, 0)
-                            viewModel.updateBloodPressure(systolic, diastolic)
-                        }
-                        BluetoothService.DATA_TYPE_HEART_RATE -> {
-                            val heartRate = intent.getIntExtra(BluetoothService.EXTRA_HEART_RATE, 0)
-                            viewModel.updateHeartRate(heartRate)
-                        }
-                        BluetoothService.DATA_TYPE_BREATHING_RATE -> {
-                            val breathingRate = intent.getIntExtra(BluetoothService.EXTRA_BREATHING_RATE, 0)
-                            viewModel.updateBreathingRate(breathingRate)
-                        }
-                        // Handle other data types
-                    }
-                }
-            }
-        }
-    }
-
-//    private fun scanLeDevice() {
-//        if (!scanning) {
-//            handler.postDelayed({
-//                scanning = false
-//                bluetoothLeScanner?.stopScan(leScanCallback)
-//            }, SCAN_PERIOD)
-//
-//            scanning = true
-//            bluetoothLeScanner?.startScan(leScanCallback)
-//            Toast.makeText(this, "Scanning for devices...", Toast.LENGTH_SHORT).show()
-//        } else {
-//            scanning = false
-//            bluetoothLeScanner?.stopScan(leScanCallback)
-//        }
-//    }
-
-//    private val leScanCallback = object : ScanCallback() {
-//        override fun onScanResult(callbackType: Int, result: ScanResult) {
-//            super.onScanResult(callbackType, result)
-//            val device = result.device
-//            // Check if this is an Arduino Feather device
-//            if (isArduinoFeatherDevice(device)) {
-//                Toast.makeText(this@MainActivity, "Found DiracSens device: ${device.name}", Toast.LENGTH_SHORT).show()
-//                connectToDevice(device.address)
-//            }
-//        }
-//    }
-//
-//    private fun isArduinoFeatherDevice(device: android.bluetooth.BluetoothDevice): Boolean {
-//        // Check device name or address to identify Arduino Feather boards
-//        val deviceName = device.name ?: return false
-//        return deviceName.contains("Feather", ignoreCase = true) ||
-//                deviceName.contains("DiracSens", ignoreCase = true)
-//    }
-//
-//    private fun connectToDevice(address: String) {
-//        val intent = Intent(this, BluetoothService::class.java).apply {
-//            action = BluetoothService.ACTION_CONNECT
-//            putExtra(BluetoothService.EXTRA_DEVICE_ADDRESS, address)
-//        }
-//        startService(intent)
-//    }
-
     override fun onDestroy() {
         super.onDestroy()
-        try {
-            unregisterReceiver(dataUpdateReceiver)
-        } catch (e: IllegalArgumentException) {
-            // Receiver not registered
-        }
     }
 }

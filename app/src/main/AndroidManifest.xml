@@ -24,6 +24,10 @@
     <!-- BLE feature requirement -->
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name="com.diracsens.android.fallprevention.DiracSensApplication"
         android:allowBackup="true"
@@ -45,8 +49,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.diracsens.android.fallprevention.activities.sensor.BloodPressureActivity" />
-        <activity android:name="com.diracsens.android.fallprevention.activities.sensor.HeartRateActivity" />
+        <activity android:name=".activities.sensor.BloodPressureActivity" />
+        <activity android:name=".activities.sensor.HeartRateActivity" />
         <activity android:name=".activities.sensor.RespiratoryRateActivity" />
         <activity android:name=".activities.sensor.GaitAnalysisActivity" />
         <activity android:name=".activities.sensor.BodyBalanceActivity" />
@@ -65,6 +69,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Add receiver declaration -->
+        <receiver
+            android:name=".activities.sensor.BaseSensorActivity$dataUpdateReceiver"
+            android:exported="false" />
+
+        <!-- Add receiver declaration -->
+        <receiver
+            android:name=".receivers.BluetoothDataReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

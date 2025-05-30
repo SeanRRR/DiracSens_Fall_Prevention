@@ -9,6 +9,12 @@ import com.diracsens.android.fallprevention.models.BloodPressureReading
 import com.diracsens.android.fallprevention.models.BreathingRateReading
 import com.diracsens.android.fallprevention.models.GaitReading
 import com.diracsens.android.fallprevention.models.HeartRateReading
+import com.diracsens.android.fallprevention.models.ChromiumReading
+import com.diracsens.android.fallprevention.models.LeadReading
+import com.diracsens.android.fallprevention.models.MercuryReading
+import com.diracsens.android.fallprevention.models.CadmiumReading
+import com.diracsens.android.fallprevention.models.SilverReading
+import com.diracsens.android.fallprevention.models.TemperatureReading
 
 @Database(
     entities = [
@@ -16,9 +22,15 @@ import com.diracsens.android.fallprevention.models.HeartRateReading
         HeartRateReading::class,
         BreathingRateReading::class,
         GaitReading::class,
-        BalanceReading::class
+        BalanceReading::class,
+        ChromiumReading::class,
+        LeadReading::class,
+        MercuryReading::class,
+        CadmiumReading::class,
+        SilverReading::class,
+        TemperatureReading::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +39,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun breathingRateDao(): BreathingRateDao
     abstract fun gaitDao(): GaitDao
     abstract fun balanceDao(): BalanceDao
+    abstract fun chromiumDao(): ChromiumDao
+    abstract fun leadDao(): LeadDao
+    abstract fun mercuryDao(): MercuryDao
+    abstract fun cadmiumDao(): CadmiumDao
+    abstract fun silverDao(): SilverDao
+    abstract fun temperatureDao(): TemperatureDao
 
     companion object {
         @Volatile
@@ -38,7 +56,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "diracsens_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration() // This will recreate tables if version changes
+                .build()
                 INSTANCE = instance
                 instance
             }
