@@ -30,6 +30,7 @@ class BluetoothService : Service() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private var lastDataTime = 0L
     private var dataCount = 0
+    private var totalTimeBetweenSamples = 0L  // Added for sampling rate calculation
     private var isForeground = false
     private var lastConnectedDevice: BluetoothDevice? = null
     private var lastConnectedAddress: String? = null
@@ -54,8 +55,8 @@ class BluetoothService : Service() {
         const val STATE_CONNECTED = 2
 
         // UUIDs for the Arduino Feather device
-        private val SERVICE_UUID = UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB")
-        private val CHARACTERISTIC_UUID = UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB")
+        private val SERVICE_UUID = UUID.fromString("00001234-0000-1000-8000-00805F9B34FB")  // Custom service UUID from Arduino
+        private val CHARACTERISTIC_UUID = UUID.fromString("00001235-0000-1000-8000-00805F9B34FB")  // Custom characteristic UUID from Arduino
 
         // Data type constants
         const val DATA_TYPE_HEART_RATE = "heart_rate"
@@ -77,6 +78,7 @@ class BluetoothService : Service() {
         const val EXTRA_DATA = "com.diracsens.android.fallprevention.EXTRA_DATA"
         const val EXTRA_DATA_TYPE = "com.diracsens.android.fallprevention.EXTRA_DATA_TYPE"
         const val EXTRA_DEVICE_ADDRESS = "com.diracsens.android.fallprevention.EXTRA_DEVICE_ADDRESS"
+        const val EXTRA_DEVICE_NAME = "com.diracsens.android.fallprevention.EXTRA_DEVICE_NAME"
         const val EXTRA_HEART_RATE = "com.diracsens.android.fallprevention.EXTRA_HEART_RATE"
         const val EXTRA_SYSTOLIC = "com.diracsens.android.fallprevention.EXTRA_SYSTOLIC"
         const val EXTRA_DIASTOLIC = "com.diracsens.android.fallprevention.EXTRA_DIASTOLIC"
@@ -91,23 +93,29 @@ class BluetoothService : Service() {
         
         fun setDeviceDiscoveryCallback(callback: (List<BluetoothDevice>) -> Unit) {
             deviceDiscoveryCallback = callback
-    }
+        }
 
         fun getLastConnectedDevice(): BluetoothDevice? = lastConnectedDevice
         
         fun getLastConnectedAddress(): String? = lastConnectedAddress
+
+        fun getConnectedDeviceName(): String? = bluetoothGatt?.device?.name
     }
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "BluetoothService onCreate called. Instance: $this")
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
         bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
         createNotificationChannel()
+        // Restore last connected address from SharedPreferences
+        val prefs = getSharedPreferences("heart_rate_prefs", Context.MODE_PRIVATE)
+        lastConnectedAddress = prefs.getString("last_device_address", null)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Service starting with intent: ${intent?.action}")
+        Log.d(TAG, "BluetoothService onStartCommand called. Instance: $this, intent: $intent")
         
         when (intent?.action) {
                 ACTION_CONNECT -> {
@@ -165,6 +173,7 @@ class BluetoothService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder {
+        Log.d(TAG, "BluetoothService onBind called. Instance: $this")
         return binder
     }
 
@@ -246,10 +255,13 @@ class BluetoothService : Service() {
     }
 
     fun connect(device: BluetoothDevice) {
-        Log.d(TAG, "Connecting to device: ${device.name ?: "Unknown"} (${device.address})")
+        Log.d(TAG, "Connecting to device: \\${device.name ?: "Unknown"} (\\${device.address})")
         // Store the device for future reconnection
         lastConnectedDevice = device
         lastConnectedAddress = device.address
+        // Persist last connected address
+        val prefs = getSharedPreferences("heart_rate_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("last_device_address", device.address).apply()
         // Broadcast connecting state
         broadcastConnectionState(STATE_CONNECTING)
         // Stop scanning if in progress
@@ -259,7 +271,14 @@ class BluetoothService : Service() {
     }
 
     private fun connectToDevice(device: BluetoothDevice) {
-        Log.d(TAG, "Connecting to device: ${device.name ?: "Unknown"} (${device.address})")
+        Log.d(TAG, "connectToDevice called. Instance: $this, device: ${device.name} (${device.address})")
+        // Safeguard: Always disconnect and close any existing GATT before connecting
+        if (bluetoothGatt != null) {
+            Log.d(TAG, "Existing GATT connection found, disconnecting and closing before new connect")
+            bluetoothGatt?.disconnect()
+            bluetoothGatt?.close()
+            bluetoothGatt = null
+        }
         bluetoothGatt = device.connectGatt(this, false, gattCallback)
     }
 
@@ -309,11 +328,13 @@ class BluetoothService : Service() {
                 val service = gatt.getService(SERVICE_UUID)
                 if (service == null) {
                     Log.e(TAG, "Required service not found: $SERVICE_UUID")
+                    broadcastConnectionState(STATE_DISCONNECTED)
                     return
                 }
                 val characteristic = service.getCharacteristic(CHARACTERISTIC_UUID)
                 if (characteristic == null) {
                     Log.e(TAG, "Required characteristic not found: $CHARACTERISTIC_UUID")
+                    broadcastConnectionState(STATE_DISCONNECTED)
                     return
                 }
                 Log.d(TAG, "Found required service and characteristic, enabling notifications")
@@ -323,19 +344,30 @@ class BluetoothService : Service() {
                 Log.d(TAG, "setCharacteristicNotification result: $success")
                 
                 // Get the descriptor for notifications
-                        val descriptor = characteristic.getDescriptor(
-                            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-                        )
+                val descriptor = characteristic.getDescriptor(
+                    UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+                )
                 if (descriptor != null) {
                     // Enable notifications by writing to the descriptor
                     descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                     val writeSuccess = gatt.writeDescriptor(descriptor)
                     Log.d(TAG, "writeDescriptor result: $writeSuccess")
+                    
+                    // Broadcast connected state after successfully setting up notifications
+                    if (writeSuccess) {
+                        Log.d(TAG, "Successfully set up notifications, broadcasting connected state")
+                        broadcastConnectionState(STATE_CONNECTED)
+                    } else {
+                        Log.e(TAG, "Failed to write descriptor")
+                        broadcastConnectionState(STATE_DISCONNECTED)
+                    }
                 } else {
                     Log.e(TAG, "Notification descriptor not found")
-                    }
+                    broadcastConnectionState(STATE_DISCONNECTED)
+                }
             } else {
                 Log.e(TAG, "Service discovery failed with status: $status")
+                broadcastConnectionState(STATE_DISCONNECTED)
             }
         }
 
@@ -347,33 +379,27 @@ class BluetoothService : Service() {
             val timeSinceLastData = if (lastDataTime > 0) currentTime - lastDataTime else 0
             lastDataTime = currentTime
             dataCount++
-
-            val data = characteristic.getValue()
-            Log.d(TAG, "Received data #$dataCount (${timeSinceLastData}ms since last) from ${characteristic.uuid}: ${data.joinToString(", ") { String.format("%02X", it) }}")
             
-            // Try to interpret the data in different ways
-            if (data.isNotEmpty()) {
-                // Log as hex
-                Log.d(TAG, "Data as hex: ${data.joinToString(" ") { String.format("%02X", it) }}")
-                
-                // Log as ASCII if possible
-                val ascii = data.map { it.toInt().toChar() }.joinToString("")
-                if (ascii.all { it.isPrintable() }) {
-                    Log.d(TAG, "Data as ASCII: $ascii")
+            val data = characteristic.value
+            Log.d(TAG, "Received packet of size: \\${data.size} bytes")
+
+            // Handle 10 samples per packet (20 bytes)
+            if (data.size == 20) {
+                val samples = IntArray(10)
+                for (i in 0 until 10) {
+                    val high = data[i * 2].toInt() and 0xFF
+                    val low = data[i * 2 + 1].toInt() and 0xFF
+                    samples[i] = (high shl 8) or low
+                    Log.d(TAG, "Sample $i: \\${samples[i]}")
                 }
-                
-                // Log as integers
-                Log.d(TAG, "Data as integers: ${data.map { it.toInt() }.joinToString(", ")}")
-                
-                // Try to interpret as heart rate if it matches our expected format
-                if (data.size >= 2 && data[0].toInt() == 0x07) {
-                    val heartRate = data.copyOfRange(1, data.size).toInt()
-                    Log.d(TAG, "Interpreted as heart rate: $heartRate")
-                    updateHeartRate(heartRate)
-                } else {
-                    // If it doesn't match our expected format, log that
-                    Log.d(TAG, "Data doesn't match expected heart rate format (first byte should be 0x07)")
-                }
+                broadcastSamples(samples)
+            } else if (data.size == 2) {
+                // Fallback: single sample
+                val piezoValue = ((data[0].toInt() and 0xFF) shl 8) or (data[1].toInt() and 0xFF)
+                Log.d(TAG, "Processed piezo value: $piezoValue")
+                updateHeartRate(piezoValue)
+            } else {
+                Log.d(TAG, "Unexpected data size: \\${data.size} bytes")
             }
         }
 
@@ -450,6 +476,16 @@ class BluetoothService : Service() {
     private fun broadcastConnectionState(state: Int) {
         val intent = Intent(ACTION_CONNECTION_STATE_CHANGED).apply {
             putExtra(EXTRA_CONNECTION_STATE, state)
+            putExtra(EXTRA_DEVICE_NAME, bluetoothGatt?.device?.name ?: "PiezoSensor")
+        }
+        sendBroadcast(intent)
+    }
+
+    // Broadcast an array of samples (10 per packet)
+    private fun broadcastSamples(samples: IntArray) {
+        val intent = Intent(ACTION_DATA_AVAILABLE).apply {
+            putExtra(EXTRA_DATA_TYPE, DATA_TYPE_HEART_RATE)
+            putExtra(EXTRA_DATA, samples)
         }
         sendBroadcast(intent)
     }

@@ -248,6 +248,20 @@ class HealthMetricsViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
+    fun updateHeartRateBatch(heartRates: IntArray) {
+        heartRates.forEach { heartRate ->
+            _currentHeartRate.value = heartRate
+            viewModelScope.launch {
+                repository.insertHeartRate(
+                    HeartRateReading(
+                        timestamp = System.currentTimeMillis(),
+                        heartRate = heartRate
+                    )
+                )
+            }
+        }
+    }
+
     // Export data
     fun exportData(dataType: String, onComplete: (Uri?) -> Unit) {
         viewModelScope.launch {

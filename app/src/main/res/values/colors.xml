@@ -10,4 +10,14 @@
     <color name="light_background">#F5F7FA</color>
     <color name="dark_grey_icon">#424242</color>
     <color name="call_button_purple">#7852A9</color>
+    <color name="status_normal">#4CAF50</color>
+    <color name="status_warning">#FFC107</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_disconnected">#9E9E9E</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+    <color name="text_disabled">#9E9E9E</color>
+    <color name="status_high">#F44336</color>
+    <color name="status_low">#2196F3</color>
 </resources>
